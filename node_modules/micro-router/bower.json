@@ -1,0 +1,23 @@
+{
+  "name": "urouter",
+  "main": "index.js",
+  "version": "0.1.0",
+  "homepage": "https://github.com/darlanalves/urouter",
+  "authors": [
+    "Darlan Alves <me@darlanalv.es>"
+  ],
+  "description": "A tiny and generic router writen in ES6 (with ES5 version too)",
+  "keywords": [
+    "router",
+    "es6",
+    "harmony"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
