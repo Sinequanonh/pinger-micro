@@ -28,11 +28,13 @@ module.exports = async (req, res) => {
     return
   }
 
+  const statusCode = response.status ? response.status : 500
+
   const data = await {
     date: requestTime,
     url: response.url,
     elapsedTime: (timeout === 0) ? (new Date() - requestTime) : elapsedTime,
-    status: response.status,
+    status: statusCode,
     location,
     timeout,
   }
