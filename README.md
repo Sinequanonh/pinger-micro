@@ -10,6 +10,7 @@ A single-function HTTP microservice that pings an url from a given server locati
 # 💻 Usage
 
 `npm i`
+
 `npm run dev`
 
 # 👨‍💻 Deploy the API
