@@ -16,7 +16,11 @@ A single-function HTTP microservice that pings an url from a given server locati
 
 `now -e LOCATION=sanfrancisco`
 
+The `timeout` is set at 10000 ms.
+
 GET `https://now-deploy-{uid}.now.sh/?url=https://github.com`
+
+Reponse:
 
 ```json
 {
@@ -24,6 +28,7 @@ GET `https://now-deploy-{uid}.now.sh/?url=https://github.com`
   "url": "https://github.com",
   "elapsedTime": 221,
   "status": 200,
-  "location": "sanfrancisco"
+  "location": "sanfrancisco",
+  timeout: 0
 }
 ```
