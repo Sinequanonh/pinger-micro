@@ -29,6 +29,6 @@ Reponse:
   "elapsedTime": 221,
   "status": 200,
   "location": "sanfrancisco",
-  timeout: 0
+  "timeout": 0
 }
 ```
