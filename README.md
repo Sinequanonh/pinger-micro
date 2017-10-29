@@ -11,7 +11,7 @@ A single-function HTTP microservice that pings an url from a given server locati
 
 `npm i`
 
-`npm run dev`
+`LOCATION=frankfurt npm run dev`
 
 # 👨‍💻 Deploy the API
 
