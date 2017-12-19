@@ -2,56 +2,48 @@ const request = require('request')
 
 const MS_PER_NANO = 1000000
 const NANO_PER_SEC = 1e9
+const TIMEOUT = 10000
 
-const ping = () => new Promise(async (resolve, reject) => {
+module.exports = (url) => new Promise((resolve, reject) => {
   const payload = {}
 
   const req = request({
-    uri: 'https://zeit.co',
-    // uri: 'https://spectrum.chat',
+    uri: url,
     method: 'GET',
+    timeout: TIMEOUT,
     time: true,
-  }, async (err, resp) => {
-    if (resp.timings) {
-      // console.log(resp.timingPhases)
-      console.log('')
-      // console.log(resp.timings)
-
+  }, (err, resp) => {
+    if (resp && resp.timings) {
       const tcpConnectionAt = resp.timings.connect
 
-      console.log('')
-      payload.dns = resp.timings.lookup // DNS resolved!
-      payload.tcp = resp.timingPhases.tcp // TCP connection!
-      payload.firstByte = resp.timingPhases.firstByte
-      payload.download = resp.timingPhases.download
-      payload.wait = resp.timingPhases.wait
-      payload.total = resp.timings.end
-      console.log('')
+      payload.status = Math.round(resp.statusCode)
+      payload.dns = Math.round(resp.timings.lookup)
+      payload.tcp = Math.round(resp.timingPhases.tcp)
+      payload.firstByte = Math.round(resp.timingPhases.firstByte)
+      payload.download = Math.round(resp.timingPhases.download)
+      payload.wait = Math.round(resp.timingPhases.wait)
+      payload.elapsedTime = Math.round(resp.timings.end)
+
       resolve(payload)
+    }
+
+    if (err) {
+      console.log(err)
+      reject()
     }
   })
 
   req.on('socket', (socket) => {
-
     socket.on('connect', () => {
       payload.tcpConnectionAt = process.hrtime()
     })
 
     socket.on('secureConnect', () => {
-      // payload.tlsHandshakeAt = process.hrtime()
       payload.tlsHandshakeAt = process.hrtime(payload.tcpConnectionAt)
-
+      payload.tlsHandshake = payload.tlsHandshakeAt !== undefined ? ((payload.tlsHandshakeAt[0] * NANO_PER_SEC + payload.tlsHandshakeAt[1]) / MS_PER_NANO)  : undefined
+      delete payload.tlsHandshakeAt
+      delete payload.tcpConnectionAt
     })
   })
 
 })
-
-ping().then((res) => {
-  const payload = res
-  payload.tlsHandshake = payload.tlsHandshakeAt !== undefined ? ((payload.tlsHandshakeAt[0] * NANO_PER_SEC + payload.tlsHandshakeAt[1]) / MS_PER_NANO)  : undefined
-  delete payload.tlsHandshakeAt
-  delete payload.tcpConnectionAt
-  console.log(payload)
-})
-
-// const payload = await ping()

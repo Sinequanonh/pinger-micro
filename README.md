@@ -25,11 +25,17 @@ Reponse:
 
 ```json
 {
-  "date": "2017-10-27T23:47:04.499Z",
+  "location": "paris",
+  "timeout": 0,
   "url": "https://github.com",
-  "elapsedTime": 221,
+  "date": "2017-12-19T19:31:48.927Z",
+  "tlsHandshake": 202.716588,
   "status": 200,
-  "location": "sanfrancisco",
-  "timeout": 0
+  "dns": 29,
+  "tcp": 97,
+  "firstByte": 403,
+  "download": 196,
+  "wait": 23,
+  "elapsedTime": 725
 }
 ```

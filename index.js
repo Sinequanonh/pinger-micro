@@ -1,13 +1,12 @@
 const fetch = require('node-fetch')
 const { send } = require('micro')
 const url = require('url')
+const ping = require('./https-measurer.js')
 
 module.exports = async (req, res) => {
   if ('/favicon.ico' === req.url) {
     return
   }
-  let timeout = 0
-  const elapsedTime = 10000
 
   const location = process.env.LOCATION
   if (location === undefined) {
@@ -17,27 +16,16 @@ module.exports = async (req, res) => {
   const requestTime = new Date()
   const domain = url.parse(req.url, true).query.url
 
-  const response = await fetch(domain, { timeout: elapsedTime }).catch((err) => {
-    if (err.name === 'FetchError') {
-      return timeout = 1
-    }
-    send(res, 400, { message: 'This domain does not exist', url: domain, status: 400 })
-  })
+  const data = { location, timeout: 0, url: domain, date: requestTime }
 
-  if (response === undefined) {
-    return
+  try {
+    const response = await ping(domain)
+    Object.assign(data, response)
+  } catch (e) {
+    data.status = 500
+    data.timeout = 1
+    data.elapsedTime = 10000
   }
-
-  const statusCode = response.status ? response.status : 500
-
-  const data = await {
-    date: requestTime,
-    url: response.url,
-    elapsedTime: (timeout === 0) ? (new Date() - requestTime) : elapsedTime,
-    status: statusCode,
-    location,
-    timeout,
-  }
-
-  return send(res, 200, data)
+  
+  send(res, 200, data)
 }
