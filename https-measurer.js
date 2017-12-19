@@ -22,7 +22,8 @@ module.exports = (url) => new Promise((resolve, reject) => {
       payload.firstByte = Math.round(resp.timingPhases.firstByte)
       payload.download = Math.round(resp.timingPhases.download)
       payload.wait = Math.round(resp.timingPhases.wait)
-      payload.elapsedTime = Math.round(resp.timings.end)
+      payload.elapsedTime = Math.round(resp.timings.end) - Math.round(resp.timingPhases.download)
+      payload.total = Math.round(resp.timings.end)
 
       resolve(payload)
     }
