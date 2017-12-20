@@ -15,7 +15,7 @@ A single-function HTTP microservice that pings an url from a given server locati
 
 # 👨‍💻 Deploy the API
 
-`now -e LOCATION=sanfrancisco`
+`now -e LOCATION=sanfrancisco --force`
 
 The `timeout` is set at 10000 ms.
 
