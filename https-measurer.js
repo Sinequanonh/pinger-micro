@@ -4,12 +4,12 @@ const MS_PER_NANO = 1000000
 const NANO_PER_SEC = 1e9
 const TIMEOUT = 10000
 
-module.exports = (url) => new Promise((resolve, reject) => {
+module.exports = (url, method) => new Promise((resolve, reject) => {
   const payload = {}
 
   const req = request({
     uri: url,
-    method: 'GET',
+    method,
     timeout: TIMEOUT,
     time: true,
   }, (err, resp) => {

@@ -7,12 +7,12 @@ const MS_PER_NANO = 1000000
 const NANO_PER_SEC = 1e9
 const TIMEOUT = 10000
 
-const ping = (url) => new Promise((resolve, reject) => {
+const ping = (url, method) => new Promise((resolve, reject) => {
   const payload = {}
 
   const req = request({
     uri: url,
-    method: 'GET',
+    method,
     timeout: TIMEOUT,
     time: true,
   }, (err, resp) => {
@@ -61,10 +61,11 @@ exports.handler = (event, context, callback) => {
 
   const requestTime = new Date()
   const domain = event.query ? event.query.url : 'https://zeit.co'
+  const method = url.parse(req.url, true).query.method || 'HEAD'
 
   const data = { location, timeout: 0, url: domain, date: requestTime }
 
-  ping(domain).then((response) => {
+  ping(domain, method).then((response) => {
     Object.assign(data, response)
     callback(null, data)
   }).catch((e) => {
