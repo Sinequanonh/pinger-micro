@@ -61,7 +61,7 @@ exports.handler = (event, context, callback) => {
 
   const requestTime = new Date()
   const domain = event.query ? event.query.url : 'https://zeit.co'
-  const method = url.parse(req.url, true).query.method || 'HEAD'
+  const method = (event.query && event.query.method) ? event.query.method : 'HEAD'
 
   const data = { location, timeout: 0, url: domain, date: requestTime }
 
