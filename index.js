@@ -1,4 +1,3 @@
-const fetch = require('node-fetch')
 const { send } = require('micro')
 const url = require('url')
 const ping = require('./https-measurer.js')
@@ -14,8 +13,6 @@ module.exports = async (req, res) => {
     return
   }
 
-  const method = url.parse(req.url, true).query.method || 'HEAD'
-
   const location = process.env.LOCATION
   if (location === undefined) {
     return send(res, 400, { message: 'Requires the LOCATION environment variable', status: 400 })
@@ -23,6 +20,7 @@ module.exports = async (req, res) => {
 
   const requestTime = new Date()
   const domain = url.parse(req.url, true).query.url
+  const method = url.parse(req.url, true).query.method || 'HEAD'
 
   const data = { location, timeout: 0, url: domain, date: requestTime }
 
