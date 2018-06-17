@@ -4,20 +4,29 @@ const MS_PER_NANO = 1000000
 const NANO_PER_SEC = 1e9
 const TIMEOUT = 10000
 
-module.exports = (url, method) => new Promise((resolve, reject) => {
-  const payload = {}
+module.exports = (data) => new Promise((resolve, reject) => {
+  const payload = {};
+  const { url, method, headers, body, assertion } = data;
 
-  const req = request({
+  const params = {
     uri: url,
     method,
     timeout: TIMEOUT,
     time: true,
-    headers: {
-      "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",
-    },
-  }, (err, resp) => {
+    headers
+  };
+
+  if (!!body && !!body.length) {
+    params.body = body;
+  }
+
+  const req = request(params, (err, resp) => {
     if (resp && resp.timings) {
       const tcpConnectionAt = resp.timings.connect
+
+      if (!!resp.body && !!assertion) {
+        payload.assertion = resp.body.includes(assertion)
+      }
 
       payload.status = Math.round(resp.statusCode)
       payload.dns = Math.round(resp.timings.lookup)
