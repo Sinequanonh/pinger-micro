@@ -39,3 +39,17 @@ Reponse:
   "elapsedTime": 725
 }
 ```
+# New Digital Ocean instance:
+
+sudo apt-get update;
+
+sudo apt-get install curl software-properties-common git;
+curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -;
+sudo apt-get install -y nodejs;
+node -v;
+
+sudo npm i pm2 micro -g;
+git clone HTTPS of pinger;
+npm i;
+
+LOCATION=nyc pm2 start micro;
