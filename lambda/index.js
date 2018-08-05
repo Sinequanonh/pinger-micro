@@ -4,6 +4,8 @@ const MS_PER_NANO = 1000000
 const NANO_PER_SEC = 1e9
 const TIMEOUT = 10000
 
+const isStatusOk = status => (status >= 200 && status < 300);
+
 const ping = (data) => new Promise((resolve, reject) => {
   const { url, method, headers, body, assertion } = data
   const payload = {}
@@ -36,6 +38,16 @@ const ping = (data) => new Promise((resolve, reject) => {
       payload.wait = Math.round(resp.timingPhases.wait)
       payload.elapsedTime = Math.round(resp.timings.end) - Math.round(resp.timingPhases.download)
       payload.total = Math.round(resp.timings.end)
+
+      if (!isStatusOk(payload.status)) {
+        if (!!resp.body && !!resp.body.length) {
+          payload.body = resp.body;
+        }
+
+        if (!!resp.headers) {
+          payload.headers = resp.headers;
+        }
+      }
 
       resolve(payload)
     }
