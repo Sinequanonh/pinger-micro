@@ -41,11 +41,16 @@ const ping = (data) => new Promise((resolve, reject) => {
 
       if (!isStatusOk(payload.status)) {
         if (!!resp.body && !!resp.body.length) {
-          payload.body = resp.body;
+          try {
+            JSON.parse(resp.body);
+            payload.body = JSON.stringify(JSON.parse(resp.body));
+          } catch (e) {
+            payload.body = resp.body;
+          }
         }
 
         if (!!resp.statusMessage && !!resp.statusMessage.length) {
-          payload.body = resp.statusMessage;
+          payload.statusMessage = resp.statusMessage;
         }
 
         if (!!resp.headers) {
