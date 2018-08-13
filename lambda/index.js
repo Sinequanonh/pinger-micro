@@ -44,6 +44,10 @@ const ping = (data) => new Promise((resolve, reject) => {
           payload.body = resp.body;
         }
 
+        if (!!resp.statusMessage && !!resp.statusMessage.length) {
+          payload.body = resp.statusMessage;
+        }
+
         if (!!resp.headers) {
           payload.headers = resp.headers;
         }
