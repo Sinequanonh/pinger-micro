@@ -46,7 +46,7 @@ module.exports = async (req, res) => {
   }
 
   const data = { location, timeout: 0, url: domain, date: requestTime }
-
+  const start = process.hrtime();
   try {
     const response = await ping({
       url: domain,
@@ -58,10 +58,32 @@ module.exports = async (req, res) => {
 
     console.log(`Request for ${cyan + domain + white} with ${yellow + method + white} method`, new Date());
     Object.assign(data, response);
-  } catch (e) {
-    data.status = 500;
-    data.timeout = 1;
-    data.elapsedTime = 10000;
+  } catch (err) {
+    const end = process.hrtime(start);
+    const elapsedTime = Math.round((end[0]*1000) + (end[1] / 1000000));
+    if (err.message === 'certificate has expired') {
+      data.status = 500;
+      data.elapsedTime = elapsedTime;
+      data.description = 'ERR_CERT_DATE_INVALID';
+    } else if (err.message === 'ESOCKETTIMEDOUT') {
+      data.status = 408;
+      data.timeout = 1;
+      data.elapsedTime = 10000;
+    } else if (err.message === 'ETIMEDOUT') {
+      data.status = 408;
+      data.timeout = 1;
+      data.elapsedTime = 10000;
+    } else if (err.message.includes('getaddrinfo ENOTFOUND')) {
+      data.status = 403;
+      data.elapsedTime = elapsedTime;
+    } else if (err.message.includes('connect ECONNREFUSED')) {
+      data.status = 500;
+      data.elapsedTime = elapsedTime;
+    } else {
+      data.status = 500;
+      data.timeout = 1;
+      data.elapsedTime = 10000;
+    }
   }
   
   send(res, 200, data);

@@ -62,8 +62,7 @@ module.exports = (data) => new Promise((resolve, reject) => {
     }
 
     if (err) {
-      console.log(err)
-      reject()
+      reject(err);
     }
   })
 
