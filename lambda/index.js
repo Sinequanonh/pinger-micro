@@ -1,3 +1,4 @@
+/*global start*/
 const request = require('request')
 
 const MS_PER_NANO = 1000000
@@ -62,8 +63,7 @@ const ping = (data) => new Promise((resolve, reject) => {
     }
 
     if (err) {
-      console.log(err)
-      reject()
+      reject(err)
     }
   })
 
@@ -123,7 +123,6 @@ exports.handler = (event, context, callback) => {
   }).catch((err) => {
     const end = process.hrtime(start);
     const elapsedTime = Math.round((end[0]*1000) + (end[1] / 1000000));
-
     if (err.message === 'certificate has expired') {
       data.status = 500;
       data.elapsedTime = elapsedTime;
@@ -131,11 +130,11 @@ exports.handler = (event, context, callback) => {
     } else if (err.message === 'ESOCKETTIMEDOUT') {
       data.status = 408;
       data.timeout = 1;
-      data.elapsedTime = 10000;
+      data.elapsedTime = TIMEOUT;
     } else if (err.message === 'ETIMEDOUT') {
       data.status = 408;
       data.timeout = 1;
-      data.elapsedTime = 10000;
+      data.elapsedTime = TIMEOUT;
     } else if (err.message.includes('getaddrinfo ENOTFOUND')) {
       data.status = 403;
       data.elapsedTime = elapsedTime;
@@ -145,7 +144,7 @@ exports.handler = (event, context, callback) => {
     } else {
       data.status = 500;
       data.timeout = 1;
-      data.elapsedTime = 10000;
+      data.elapsedTime = TIMEOUT;
     }
     callback(null, data)
   })
