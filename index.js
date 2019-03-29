@@ -3,6 +3,8 @@ const url = require('url')
 
 const ping = require('./https-measurer.js')
 
+const TIMEOUT = 10000
+
 const green = '\033[32m'
 const cyan = '\033[36m'
 const blue = '\033[34m'
@@ -68,11 +70,11 @@ module.exports = async (req, res) => {
     } else if (err.message === 'ESOCKETTIMEDOUT') {
       data.status = 408;
       data.timeout = 1;
-      data.elapsedTime = 10000;
+      data.elapsedTime = TIMEOUT;
     } else if (err.message === 'ETIMEDOUT') {
       data.status = 408;
       data.timeout = 1;
-      data.elapsedTime = 10000;
+      data.elapsedTime = TIMEOUT;
     } else if (err.message.includes('getaddrinfo ENOTFOUND')) {
       data.status = 403;
       data.elapsedTime = elapsedTime;
@@ -82,7 +84,7 @@ module.exports = async (req, res) => {
     } else {
       data.status = 500;
       data.timeout = 1;
-      data.elapsedTime = 10000;
+      data.elapsedTime = elapsedTime;
     }
   }
   
