@@ -15,7 +15,7 @@ A single-function HTTP microservice that pings an url from a given server locati
 
 # 👨‍💻 Deploy the API
 
-`now -e LOCATION=sanfrancisco --force`
+`now -e LOCATION=sanfrancisco --force --regions sfo1`
 
 The `timeout` is set at 10000 ms.
 
@@ -53,3 +53,6 @@ git clone HTTPS of pinger;
 npm i;
 
 LOCATION=nyc pm2 start micro;
+
+# Start the same instance with a different port
+`LOCATION=nyc pm2 start -f micro --name="port:3002" -- -l tcp://0.0.0.0:3002`
