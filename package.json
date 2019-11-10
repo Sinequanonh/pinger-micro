@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "assert": "^1.4.1",
+    "fs": "0.0.1-security",
     "http": "0.0.0",
     "https": "^1.0.0",
     "micro": "^9.3.2",

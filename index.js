@@ -1,17 +1,30 @@
-const { send } = require('micro')
-const url = require('url')
+const { run, send }   = require('micro');
+const url        = require('url');
+const https      = require('https');
 
-const ping = require('./https-measurer.js')
+const ping       = require('./https-measurer.js');
+const fs         = require('fs');
 
-const TIMEOUT = 10000
+const TIMEOUT = 10000;
 
-const green = '\033[32m'
-const cyan = '\033[36m'
-const blue = '\033[34m'
-const yellow = '\033[33m'
-const white = '\033[0m'
+const green = '\033[32m';
+const cyan = '\033[36m';
+const blue = '\033[34m';
+const yellow = '\033[33m';
+const white = '\033[0m';
 
-module.exports = async (req, res) => {
+// if (process.env.NODE_ENV === 'prod') {
+  const key = fs.readFileSync('/etc/letsencrypt/live/ams.hyperping.io/privkey.pem', 'utf8');
+  const cert = fs.readFileSync('/etc/letsencrypt/live/ams.hyperping.io/fullchain.pem', 'utf8');
+  const ca = fs.readFileSync('/etc/letsencrypt/live/ams.hyperping.io/fullchain.pem', 'utf8');
+  const options = { key, cert, ca };
+// }
+
+const PORT = process.env.PORT || 3443;
+
+const microHttps = fn => https.createServer(options, (req, res) => run(req, res, fn));
+
+const server = microHttps(async (req, res) => {
   if ('/favicon.ico' === req.url) {
     return
   }
@@ -67,6 +80,10 @@ module.exports = async (req, res) => {
       data.status = 500;
       data.elapsedTime = elapsedTime;
       data.description = 'ERR_CERT_DATE_INVALID';
+    } else if (err.message === 'unable to verify the first certificate') {
+      data.status = 500;
+      data.elapsedTime = elapsedTime;
+      data.description = 'ERR_CERT_UNABLE_TO_VERIFY';
     } else if (err.message === 'ESOCKETTIMEDOUT') {
       data.status = 408;
       data.timeout = 1;
@@ -89,4 +106,7 @@ module.exports = async (req, res) => {
   }
   
   send(res, 200, data);
-}
+});
+
+server.listen(PORT);
+console.log(`Listening on https://localhost:${PORT}`);

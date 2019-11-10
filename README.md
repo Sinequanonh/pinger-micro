@@ -54,5 +54,22 @@ npm i;
 
 LOCATION=nyc pm2 start micro;
 
+# New EC2 instance:
+
+`sudo yum install emacs curl software-properties-common git`
+
+`curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -`
+
+`sudo yum install -y nodejs`
+
+`sudo npm i pm2 micro -g;`
+
+`git clone https://github.com/Sinequanonh/pinger-micro.git; cd pinger-micro;npm i`
+
+`LOCATION={region} pm2 start micro;`
+
 # Start the same instance with a different port
 `LOCATION=nyc pm2 start -f micro --name="port:3002" -- -l tcp://0.0.0.0:3002`
+
+# Renew cert
+`sudo certbot certonly -d ams.hyperping.io`
