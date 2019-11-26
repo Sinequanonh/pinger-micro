@@ -8,14 +8,15 @@ const isStatusOk = status => (status >= 200 && status < 300);
 
 module.exports = (data) => new Promise((resolve, reject) => {
   const payload = {};
-  const { url, method, headers, body, assertion } = data;
+  const { url, method, headers, body, assertion, followRedirect } = data;
 
   const params = {
     uri: url,
     method,
     timeout: TIMEOUT,
     time: true,
-    headers
+    headers,
+    followRedirect
   };
 
   if (!!body && !!body.length) {
@@ -58,7 +59,7 @@ module.exports = (data) => new Promise((resolve, reject) => {
         }
       }
 
-      resolve(payload)
+      resolve(payload);
     }
 
     if (err) {

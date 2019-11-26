@@ -1,7 +1,6 @@
 const { run, send }   = require('micro');
 const url        = require('url');
 const https      = require('https');
-
 const ping       = require('./https-measurer.js');
 const fs         = require('fs');
 
@@ -13,42 +12,44 @@ const blue = '\033[34m';
 const yellow = '\033[33m';
 const white = '\033[0m';
 
-// if (process.env.NODE_ENV === 'prod') {
+let options = {};
+
+if (process.env.NODE_ENV === 'prod') {
   const key = fs.readFileSync('/etc/letsencrypt/live/ams.hyperping.io/privkey.pem', 'utf8');
   const cert = fs.readFileSync('/etc/letsencrypt/live/ams.hyperping.io/fullchain.pem', 'utf8');
   const ca = fs.readFileSync('/etc/letsencrypt/live/ams.hyperping.io/fullchain.pem', 'utf8');
-  const options = { key, cert, ca };
-// }
+  options = { key, cert, ca };
+}
 
 const PORT = process.env.PORT || 3443;
 
 const microHttps = fn => https.createServer(options, (req, res) => run(req, res, fn));
-
-const server = microHttps(async (req, res) => {
+  
+const server = async (req, res) => {
   if ('/favicon.ico' === req.url) {
     return
   }
 
-  const location = process.env.LOCATION
+  const location = process.env.LOCATION;
   if (!location || !location.length) {
-    return send(res, 400, { message: 'Requires the LOCATION environment variable', status: 400 })
+    return send(res, 400, { message: 'Requires the LOCATION environment variable', status: 400 });
   }
 
-  let headers = { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36' }
-  let body = ''
+  let headers = { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36' };
+  let body = '';
 
-  const requestTime = new Date()
-  const domain = url.parse(req.url, true).query.url
+  const requestTime = new Date();
+  const domain = url.parse(req.url, true).query.url;
 
   if (!domain) {
-    return send(res, 400, { message: 'Requires an url to ping', status: 400 })
+    return send(res, 400, { message: 'Requires an url to ping', status: 400 });
   }
 
-  const method = url.parse(req.url, true).query.method || 'HEAD'
-  const rawBody = url.parse(req.url, true).query.body || ''
-  const assertion = url.parse(req.url, true).query.assertion || null
-
-  const rawHeaders = url.parse(req.url, true).query.headers || null
+  const method = url.parse(req.url, true).query.method || 'HEAD';
+  const rawBody = url.parse(req.url, true).query.body || '';
+  const assertion = url.parse(req.url, true).query.assertion || null;
+  const followRedirect = url.parse(req.url, true).query.followRedirect === 'false' ? false : true;
+  const rawHeaders = url.parse(req.url, true).query.headers || null;
 
   if (!!rawHeaders) {
     const decodedHeaders = decodeURIComponent(rawHeaders)
@@ -56,11 +57,11 @@ const server = microHttps(async (req, res) => {
   }
 
   if (!!rawBody) {
-    const decodedBody = decodeURIComponent(rawBody)
-    body = decodedBody
+    const decodedBody = decodeURIComponent(rawBody);
+    body = decodedBody;
   }
 
-  const data = { location, timeout: 0, url: domain, date: requestTime }
+  const data = { location, timeout: 0, url: domain, date: requestTime };
   const start = process.hrtime();
   try {
     const response = await ping({
@@ -68,7 +69,8 @@ const server = microHttps(async (req, res) => {
       method,
       headers,
       body,
-      assertion
+      assertion,
+      followRedirect
     });
 
     console.log(`Request for ${cyan + domain + white} with ${yellow + method + white} method`, new Date());
@@ -106,7 +108,13 @@ const server = microHttps(async (req, res) => {
   }
   
   send(res, 200, data);
-});
+};
 
-server.listen(PORT);
-console.log(`Listening on https://localhost:${PORT}`);
+module.exports = server;
+
+
+if (process.env.NODE_ENV === 'prod') {
+  const prodServer = microHttps(server);
+  prodServer.listen(PORT);
+  console.log(`Listening on https://localhost:${PORT}`);
+}
