@@ -78,6 +78,7 @@ const server = async (req, res) => {
   } catch (err) {
     const end = process.hrtime(start);
     const elapsedTime = Math.round((end[0]*1000) + (end[1] / 1000000));
+    console.log(err)
     if (err.message === 'certificate has expired') {
       data.status = 500;
       data.elapsedTime = elapsedTime;

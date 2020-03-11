@@ -1,4 +1,4 @@
-const request = require('request')
+const request = require('request');
 
 const MS_PER_NANO = 1000000
 const NANO_PER_SEC = 1e9
@@ -16,7 +16,8 @@ module.exports = (data) => new Promise((resolve, reject) => {
     timeout: TIMEOUT,
     time: true,
     headers,
-    followRedirect
+    followRedirect,
+    insecureHTTPParser: true
   };
 
   if (!!body && !!body.length) {
