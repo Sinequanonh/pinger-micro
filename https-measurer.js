@@ -8,7 +8,7 @@ const isStatusOk = status => (status >= 200 && status < 300);
 
 module.exports = (data) => new Promise((resolve, reject) => {
   const payload = {};
-  const { url, method, headers, body, assertion, followRedirect } = data;
+  const { url, method, headers, body, assertion, followRedirect, test, isTest } = data;
 
   const params = {
     uri: url,
@@ -41,7 +41,7 @@ module.exports = (data) => new Promise((resolve, reject) => {
       payload.elapsedTime = Math.round(resp.timings.end) - Math.round(resp.timingPhases.download)
       payload.total = Math.round(resp.timings.end)
 
-      if (!isStatusOk(payload.status)) {
+      if (!isStatusOk(payload.status) || isTest) {
         if (!!resp.body && !!resp.body.length) {
           try {
             JSON.parse(resp.body);

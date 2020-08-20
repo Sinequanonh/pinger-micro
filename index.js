@@ -50,6 +50,7 @@ const server = async (req, res) => {
   const assertion = url.parse(req.url, true).query.assertion || null;
   const followRedirect = url.parse(req.url, true).query.followRedirect === 'false' ? false : true;
   const rawHeaders = url.parse(req.url, true).query.headers || null;
+  const isTest = url.parse(req.url, true).query.isTest || false;
 
   if (!!rawHeaders) {
     const decodedHeaders = decodeURIComponent(rawHeaders)
@@ -70,7 +71,8 @@ const server = async (req, res) => {
       headers,
       body,
       assertion,
-      followRedirect
+      followRedirect,
+      isTest
     });
 
     console.log(`Request for ${cyan + domain + white} with ${yellow + method + white} method`, new Date());
