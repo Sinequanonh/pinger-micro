@@ -73,3 +73,10 @@ LOCATION=nyc pm2 start micro;
 
 # Renew cert
 `sudo certbot certonly -d ams.hyperping.io`
+
+# Start in cluster mode
+`LOCATION=paris pm2 start micro -i 2`
+
+# Kill program running on the same port
+lsof -i tcp:3000
+$ kill -9 PID

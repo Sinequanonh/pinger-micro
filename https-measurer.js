@@ -33,13 +33,13 @@ module.exports = (data) => new Promise((resolve, reject) => {
       }
 
       payload.status = parseInt(resp.statusCode, 10);
-      payload.dns = Math.round(resp.timings.lookup)
-      payload.tcp = Math.round(resp.timingPhases.tcp)
-      payload.firstByte = Math.round(resp.timingPhases.firstByte)
-      payload.download = Math.round(resp.timingPhases.download)
-      payload.wait = Math.round(resp.timingPhases.wait)
-      payload.elapsedTime = Math.round(resp.timings.end) - Math.round(resp.timingPhases.download)
-      payload.total = Math.round(resp.timings.end)
+      payload.dns = Math.round(resp.timings.lookup);
+      payload.tcp = Math.round(resp.timingPhases.tcp);
+      payload.firstByte = Math.round(resp.timingPhases.firstByte);
+      payload.download = Math.round(resp.timingPhases.download);
+      payload.wait = Math.round(resp.timingPhases.wait);
+      payload.elapsedTime = Math.round(resp.timings.end) - Math.round(resp.timingPhases.download);
+      payload.total = Math.round(resp.timings.end);
 
       if (!isStatusOk(payload.status) || isTest) {
         if (!!resp.body && !!resp.body.length) {
@@ -75,10 +75,9 @@ module.exports = (data) => new Promise((resolve, reject) => {
 
     socket.on('secureConnect', () => {
       payload.tlsHandshakeAt = process.hrtime(payload.tcpConnectionAt)
-      payload.tlsHandshake = payload.tlsHandshakeAt !== undefined ? ((payload.tlsHandshakeAt[0] * NANO_PER_SEC + payload.tlsHandshakeAt[1]) / MS_PER_NANO)  : undefined
+      payload.tlsHandshake = payload.tlsHandshakeAt !== undefined ? ((payload.tlsHandshakeAt[0] * NANO_PER_SEC + payload.tlsHandshakeAt[1]) / MS_PER_NANO) : undefined
       delete payload.tlsHandshakeAt
       delete payload.tcpConnectionAt
     })
   })
-
 })

@@ -2,6 +2,7 @@ const { run, send }   = require('micro');
 const url        = require('url');
 const https      = require('https');
 const ping       = require('./https-measurer.js');
+const getHealth  = require('./health.js');
 const fs         = require('fs');
 
 const TIMEOUT = 10000;
@@ -15,10 +16,23 @@ const white = '\033[0m';
 let options = {};
 
 if (process.env.NODE_ENV === 'prod') {
-  const key = fs.readFileSync('/etc/letsencrypt/live/ams.hyperping.io/privkey.pem', 'utf8');
-  const cert = fs.readFileSync('/etc/letsencrypt/live/ams.hyperping.io/fullchain.pem', 'utf8');
-  const ca = fs.readFileSync('/etc/letsencrypt/live/ams.hyperping.io/fullchain.pem', 'utf8');
-  options = { key, cert, ca };
+  try {
+    if (!!fs.readFileSync('/etc/letsencrypt/live/ams.hyperping.io/privkey.pem', 'utf8')) {
+      const key = fs.readFileSync('/etc/letsencrypt/live/ams.hyperping.io/privkey.pem', 'utf8');
+      const cert = fs.readFileSync('/etc/letsencrypt/live/ams.hyperping.io/fullchain.pem', 'utf8');
+      const ca = fs.readFileSync('/etc/letsencrypt/live/ams.hyperping.io/fullchain.pem', 'utf8');
+      options = { key, cert, ca };
+  
+    }
+  } catch (err) {}
+}
+
+if (process.env.NODE_ENV === 'aws') {
+  try {
+    const key = fs.readFileSync('/home/ec2-user/certs/server-key.pem', 'utf8');
+    const cert = fs.readFileSync('/home/ec2-user/certs/server-cert.pem', 'utf8');
+    options = { key, cert };
+  } catch (err) {}
 }
 
 const PORT = process.env.PORT || 3443;
@@ -27,7 +41,7 @@ const microHttps = fn => https.createServer(options, (req, res) => run(req, res,
   
 const server = async (req, res) => {
   if ('/favicon.ico' === req.url) {
-    return
+    return;
   }
 
   const location = process.env.LOCATION;
@@ -35,7 +49,13 @@ const server = async (req, res) => {
     return send(res, 400, { message: 'Requires the LOCATION environment variable', status: 400 });
   }
 
-  let headers = { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36' };
+  if ('/health' === req.url) {
+    const health = getHealth();
+    return send(res, 200, health);
+  }
+
+  // let headers = { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36' };
+  let headers = { 'User-Agent': 'Mozilla/5.0 (compatible; Hyperping/1.0; http://hyperping.io)' };
   let body = '';
 
   const requestTime = new Date();
@@ -75,7 +95,7 @@ const server = async (req, res) => {
       isTest
     });
 
-    console.log(`Request for ${cyan + domain + white} with ${yellow + method + white} method`, new Date());
+    console.log(`Requestz for ${cyan + domain + white} with ${yellow + method + white} method`, new Date());
     Object.assign(data, response);
   } catch (err) {
     const end = process.hrtime(start);
@@ -116,7 +136,7 @@ const server = async (req, res) => {
 module.exports = server;
 
 
-if (process.env.NODE_ENV === 'prod') {
+if (process.env.NODE_ENV === 'prod' || process.env.NODE_ENV === 'aws') {
   const prodServer = microHttps(server);
   prodServer.listen(PORT);
   console.log(`Listening on https://localhost:${PORT}`);
