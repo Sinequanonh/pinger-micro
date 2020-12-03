@@ -1,12 +1,24 @@
 cd /Users/leobaecker/dev/pinger-micro;
-zip -rq zipped package.json https-measurer.js index.js health.js;
+zip -rq zipped package.json https-measurer.js index.js health.js certOptions.js ping.js handleError.js;
 
-# Amsterdam
+# AMS1 Amsterdam 1
 scp zipped.zip root@ams.hyperping.io:/root/pinger-micro
 ssh root@ams.hyperping.io "
 cd /root/pinger-micro;
 unzip -qo zipped.zip;
 rm zipped.zip;
+npm i;
+pm2 reload micro;
+exit;
+"
+
+# AMS2 Amsterdam 2 Scaleway
+scp zipped.zip root@51.15.126.183:/root/pinger-micro
+ssh root@51.15.126.183 "
+cd /root/pinger-micro;
+unzip -qo zipped.zip;
+rm zipped.zip;
+npm i;
 pm2 reload micro;
 exit;
 "
@@ -16,6 +28,7 @@ scp -i ./certs/ec2-sydney.pem zipped.zip ec2-user@ec2-3-25-83-137.ap-southeast-2
 ssh -i ./certs/ec2-sydney.pem ec2-user@ec2-3-25-83-137.ap-southeast-2.compute.amazonaws.com "
 cd /home/ec2-user/pinger-micro;
 unzip -qo zipped.zip;
+npm i;
 rm zipped.zip;
 pm2 reload micro;
 exit;
@@ -26,6 +39,7 @@ scp -i ./certs/ec2-virginia.pem zipped.zip ec2-user@ec2-34-239-101-59.compute-1.
 ssh -i ./certs/ec2-virginia.pem ec2-user@ec2-34-239-101-59.compute-1.amazonaws.com "
 cd /home/ec2-user/pinger-micro;
 unzip -qo zipped.zip;
+npm i;
 rm zipped.zip;
 pm2 reload micro;
 exit;
@@ -36,6 +50,7 @@ scp -i ./certs/ec2-california.pem zipped.zip ec2-user@ec2-52-53-152-139.us-west-
 ssh -i ./certs/ec2-california.pem ec2-user@ec2-52-53-152-139.us-west-1.compute.amazonaws.com "
 cd /home/ec2-user/pinger-micro;
 unzip -qo zipped.zip;
+npm i;
 rm zipped.zip;
 pm2 reload micro;
 exit;
@@ -47,6 +62,7 @@ scp -i ./certs/ec2-california.pem zipped.zip ec2-user@ec2-13-56-138-59.us-west-1
 ssh -i ./certs/ec2-california.pem ec2-user@ec2-13-56-138-59.us-west-1.compute.amazonaws.com "
 cd /home/ec2-user/pinger-micro;
 unzip -qo zipped.zip;
+npm i;
 rm zipped.zip;
 pm2 reload micro;
 exit;
@@ -58,6 +74,7 @@ scp -i ./certs/ec2-california.pem zipped.zip ec2-user@ec2-18-144-90-5.us-west-1.
 ssh -i ./certs/ec2-california.pem ec2-user@ec2-18-144-90-5.us-west-1.compute.amazonaws.com "
 cd /home/ec2-user/pinger-micro;
 unzip -qo zipped.zip;
+npm i;
 rm zipped.zip;
 pm2 reload micro;
 exit;
@@ -68,6 +85,7 @@ scp -i ./certs/ec2-toronto.pem zipped.zip ec2-user@ec2-35-182-202-195.ca-central
 ssh -i ./certs/ec2-toronto.pem ec2-user@ec2-35-182-202-195.ca-central-1.compute.amazonaws.com "
 cd /home/ec2-user/pinger-micro;
 unzip -qo zipped.zip;
+npm i;
 rm zipped.zip;
 pm2 reload micro;
 exit;
@@ -78,6 +96,7 @@ scp -i ./certs/ec2-london.pem zipped.zip ec2-user@ec2-18-130-89-77.eu-west-2.com
 ssh -i ./certs/ec2-london.pem ec2-user@ec2-18-130-89-77.eu-west-2.compute.amazonaws.com "
 cd /home/ec2-user/pinger-micro;
 unzip -qo zipped.zip;
+npm i;
 rm zipped.zip;
 pm2 reload micro;
 exit;
@@ -88,6 +107,7 @@ scp -i ./certs/ec2-seoul.pem zipped.zip ec2-user@ec2-13-125-63-75.ap-northeast-2
 ssh -i ./certs/ec2-seoul.pem ec2-user@ec2-13-125-63-75.ap-northeast-2.compute.amazonaws.com "
 cd /home/ec2-user/pinger-micro;
 unzip -qo zipped.zip;
+npm i;
 rm zipped.zip;
 pm2 reload micro;
 exit;
@@ -98,6 +118,7 @@ scp -i ./certs/ec2-mumbai.pem zipped.zip ec2-user@ec2-35-154-18-153.ap-south-1.c
 ssh -i ./certs/ec2-mumbai.pem ec2-user@ec2-35-154-18-153.ap-south-1.compute.amazonaws.com "
 cd /home/ec2-user/pinger-micro;
 unzip -qo zipped.zip;
+npm i;
 rm zipped.zip;
 pm2 reload micro;
 exit;
@@ -108,6 +129,7 @@ scp -i ./certs/ec2-paris.pem zipped.zip ec2-user@ec2-52-47-165-143.eu-west-3.com
 ssh -i ./certs/ec2-paris.pem ec2-user@ec2-52-47-165-143.eu-west-3.compute.amazonaws.com "
 cd /home/ec2-user/pinger-micro;
 unzip -qo zipped.zip;
+npm i;
 rm zipped.zip;
 pm2 reload micro;
 exit;
@@ -118,6 +140,7 @@ scp -i ./certs/ec2-saopaulo.pem zipped.zip ec2-user@ec2-18-229-134-190.sa-east-1
 ssh -i ./certs/ec2-saopaulo.pem ec2-user@ec2-18-229-134-190.sa-east-1.compute.amazonaws.com "
 cd /home/ec2-user/pinger-micro;
 unzip -qo zipped.zip;
+npm i;
 rm zipped.zip;
 pm2 reload micro;
 exit;
@@ -128,6 +151,7 @@ scp -i ./certs/ec2-frankfurt.pem zipped.zip ec2-user@ec2-18-156-173-152.eu-centr
 ssh -i ./certs/ec2-frankfurt.pem ec2-user@ec2-18-156-173-152.eu-central-1.compute.amazonaws.com "
 cd /home/ec2-user/pinger-micro;
 unzip -qo zipped.zip;
+npm i;
 rm zipped.zip;
 pm2 reload micro;
 exit;
@@ -138,6 +162,7 @@ scp -i ./certs/ec2-frankfurt.pem zipped.zip ec2-user@ec2-35-159-52-76.eu-central
 ssh -i ./certs/ec2-frankfurt.pem ec2-user@ec2-35-159-52-76.eu-central-1.compute.amazonaws.com "
 cd /home/ec2-user/pinger-micro;
 unzip -qo zipped.zip;
+npm i;
 rm zipped.zip;
 pm2 reload micro;
 exit;
@@ -148,6 +173,29 @@ scp zipped.zip root@167.172.248.190:/root/pinger-micro
 ssh root@167.172.248.190 "
 cd /root/pinger-micro;
 unzip -qo zipped.zip;
+npm i;
+rm zipped.zip;
+pm2 reload micro;
+exit;
+"
+
+# NYC http://134.209.213.71:3000 NYC8 DO (NYC-1 datacenter)
+scp zipped.zip root@134.209.213.71:/root/pinger-micro
+ssh root@134.209.213.71 "
+cd /root/pinger-micro;
+unzip -qo zipped.zip;
+npm i;
+rm zipped.zip;
+pm2 reload micro;
+exit;
+"
+
+# # Singapore http://13.212.12.210:3000 SGP1 AWS
+scp -i ./certs/ec2-singapore.pem zipped.zip ec2-user@ec2-13-212-12-210.ap-southeast-1.compute.amazonaws.com:/home/ec2-user/pinger-micro
+ssh -i ./certs/ec2-singapore.pem ec2-user@ec2-13-212-12-210.ap-southeast-1.compute.amazonaws.com "
+cd /home/ec2-user/pinger-micro;
+unzip -qo zipped.zip;
+npm i;
 rm zipped.zip;
 pm2 reload micro;
 exit;

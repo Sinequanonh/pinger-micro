@@ -8,7 +8,7 @@ const isStatusOk = status => (status >= 200 && status < 300);
 
 module.exports = (data) => new Promise((resolve, reject) => {
   const payload = {};
-  const { url, method, headers, body, assertion, followRedirect, test, isTest } = data;
+  const { url, method, headers, body, assertion, followRedirect, isTest } = data;
 
   const params = {
     uri: url,
@@ -17,7 +17,8 @@ module.exports = (data) => new Promise((resolve, reject) => {
     time: true,
     headers,
     followRedirect,
-    insecureHTTPParser: true
+    insecureHTTPParser: true,
+    rejectUnauthorized: false
   };
 
   if (!!body && !!body.length) {

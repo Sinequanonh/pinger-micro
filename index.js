@@ -1,49 +1,30 @@
-const { run, send }   = require('micro');
-const url        = require('url');
-const https      = require('https');
-const ping       = require('./https-measurer.js');
-const getHealth  = require('./health.js');
-const fs         = require('fs');
+const { run, send }           = require('micro');
+const url                     = require('url');
+const https                   = require('https');
+const httpPing                = require('./https-measurer.js');
+const { icmpPing, tcpPing }   = require('./ping.js');
+const getHealth               = require('./health.js');
+const getCertOptions          = require('./certOptions.js');
+const handleError             = require('./handleError.js');
+const [cyan, yellow, white]   = ['\033[36m', '\033[33m', '\033[0m'];
+const PORT                    = process.env.PORT || 3443;
 
-const TIMEOUT = 10000;
+const parseUrl = () => {
+  let reqUrl = null;
 
-const green = '\033[32m';
-const cyan = '\033[36m';
-const blue = '\033[34m';
-const yellow = '\033[33m';
-const white = '\033[0m';
+  return {
+    set(req) {
+      reqUrl = req.url;
+    },
 
-let options = {};
-
-if (process.env.NODE_ENV === 'prod') {
-  try {
-    if (!!fs.readFileSync('/etc/letsencrypt/live/ams.hyperping.io/privkey.pem', 'utf8')) {
-      const key = fs.readFileSync('/etc/letsencrypt/live/ams.hyperping.io/privkey.pem', 'utf8');
-      const cert = fs.readFileSync('/etc/letsencrypt/live/ams.hyperping.io/fullchain.pem', 'utf8');
-      const ca = fs.readFileSync('/etc/letsencrypt/live/ams.hyperping.io/fullchain.pem', 'utf8');
-      options = { key, cert, ca };
-  
+    get(key, defaultValue) {
+      return url.parse(reqUrl, true).query[key] || defaultValue;
     }
-  } catch (err) {}
+  }
 }
-
-if (process.env.NODE_ENV === 'aws') {
-  try {
-    const key = fs.readFileSync('/home/ec2-user/certs/server-key.pem', 'utf8');
-    const cert = fs.readFileSync('/home/ec2-user/certs/server-cert.pem', 'utf8');
-    options = { key, cert };
-  } catch (err) {}
-}
-
-const PORT = process.env.PORT || 3443;
-
-const microHttps = fn => https.createServer(options, (req, res) => run(req, res, fn));
   
 const server = async (req, res) => {
-  if ('/favicon.ico' === req.url) {
-    return;
-  }
-
+  if ('/favicon.ico' === req.url) {return;}
   const location = process.env.LOCATION;
   if (!location || !location.length) {
     return send(res, 400, { message: 'Requires the LOCATION environment variable', status: 400 });
@@ -53,39 +34,47 @@ const server = async (req, res) => {
     const health = getHealth();
     return send(res, 200, health);
   }
+  const p = parseUrl();
+  p.set(req);
+  const domain = p.get('url');
+  if (!domain) {return send(res, 400, { message: 'Requires an url to ping', status: 400 });}
+  const method         = p.get('method', 'HEAD');
+  const rawBody        = p.get('body', '');
+  const assertion      = p.get('assertion');
+  const followRedirect = p.get('followRedirect') !== 'false';
+  const rawHeaders     = p.get('headers');
+  const isTest         = p.get('isTest', false);
+  const protocol       = p.get('protocol', 'http');
+  const port           = Number(p.get('port', -1));
+  if (protocol === 'port') {
+    const tcpResult = await tcpPing({ host: domain, port });
+    tcpResult.location = location;
+    tcpResult.url = domain;
+    tcpResult.status = tcpResult.alive ? 200 : 400;
+    tcpResult.port = port;
+    tcpResult.date = new Date();
+    return send(res, 200, tcpResult);
+  }
+  if (protocol === 'icmp') {
+    const icmpResult = await icmpPing({ host: domain });
+    icmpResult.location = location;
+    icmpResult.url = domain;
+    icmpResult.status = icmpResult.alive ? 200 : 400;
+    icmpResult.date = new Date();
+    return send(res, 200, icmpResult);
+  }
 
-  // let headers = { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36' };
+  // HTTP protocol
   let headers = { 'User-Agent': 'Mozilla/5.0 (compatible; Hyperping/1.0; http://hyperping.io)' };
-  let body = '';
-
-  const requestTime = new Date();
-  const domain = url.parse(req.url, true).query.url;
-
-  if (!domain) {
-    return send(res, 400, { message: 'Requires an url to ping', status: 400 });
-  }
-
-  const method = url.parse(req.url, true).query.method || 'HEAD';
-  const rawBody = url.parse(req.url, true).query.body || '';
-  const assertion = url.parse(req.url, true).query.assertion || null;
-  const followRedirect = url.parse(req.url, true).query.followRedirect === 'false' ? false : true;
-  const rawHeaders = url.parse(req.url, true).query.headers || null;
-  const isTest = url.parse(req.url, true).query.isTest || false;
-
   if (!!rawHeaders) {
-    const decodedHeaders = decodeURIComponent(rawHeaders)
-    Object.assign(headers, JSON.parse(decodedHeaders))
+    const decodedHeaders = decodeURIComponent(rawHeaders);
+    Object.assign(headers, JSON.parse(decodedHeaders));
   }
-
-  if (!!rawBody) {
-    const decodedBody = decodeURIComponent(rawBody);
-    body = decodedBody;
-  }
-
-  const data = { location, timeout: 0, url: domain, date: requestTime };
+  const body = !!rawBody ? decodeURIComponent(rawBody) : '';
+  const data = { location, timeout: 0, url: domain, date: new Date() };
   const start = process.hrtime();
   try {
-    const response = await ping({
+    const response = await httpPing({
       url: domain,
       method,
       headers,
@@ -94,50 +83,21 @@ const server = async (req, res) => {
       followRedirect,
       isTest
     });
-
-    console.log(`Requestz for ${cyan + domain + white} with ${yellow + method + white} method`, new Date());
+    console.log(`Request for ${cyan + domain + white} with ${yellow + method + white} method`, new Date());
     Object.assign(data, response);
   } catch (err) {
-    const end = process.hrtime(start);
-    const elapsedTime = Math.round((end[0]*1000) + (end[1] / 1000000));
-    console.log(err)
-    if (err.message === 'certificate has expired') {
-      data.status = 500;
-      data.elapsedTime = elapsedTime;
-      data.description = 'ERR_CERT_DATE_INVALID';
-    } else if (err.message === 'unable to verify the first certificate') {
-      data.status = 500;
-      data.elapsedTime = elapsedTime;
-      data.description = 'ERR_CERT_UNABLE_TO_VERIFY';
-    } else if (err.message === 'ESOCKETTIMEDOUT') {
-      data.status = 408;
-      data.timeout = 1;
-      data.elapsedTime = TIMEOUT;
-    } else if (err.message === 'ETIMEDOUT') {
-      data.status = 408;
-      data.timeout = 1;
-      data.elapsedTime = TIMEOUT;
-    } else if (err.message.includes('getaddrinfo ENOTFOUND')) {
-      data.status = 403;
-      data.elapsedTime = elapsedTime;
-    } else if (err.message.includes('connect ECONNREFUSED')) {
-      data.status = 500;
-      data.elapsedTime = elapsedTime;
-    } else {
-      data.status = 500;
-      data.timeout = 1;
-      data.elapsedTime = elapsedTime;
-    }
+    data.elapsedTime = Math.round((process.hrtime(start)[0]*1000) + (process.hrtime(start)[1] / 1000000));
+    Object.assign(data, handleError(err));
+    data.error = { message: err, debugUrl: req.url };
   }
-  
-  send(res, 200, data);
+  return send(res, 200, data);
 };
 
 module.exports = server;
 
 
-if (process.env.NODE_ENV === 'prod' || process.env.NODE_ENV === 'aws') {
+if (process.env.NODE_ENV === 'prod') {
+  const microHttps = fn => https.createServer(getCertOptions(), (req, res) => run(req, res, fn));
   const prodServer = microHttps(server);
   prodServer.listen(PORT);
-  console.log(`Listening on https://localhost:${PORT}`);
 }
