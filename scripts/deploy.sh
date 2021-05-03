@@ -168,20 +168,9 @@ pm2 reload micro;
 exit;
 "
 
-# NYC http://167.172.248.190:3000 NYC7 DO
-scp zipped.zip root@167.172.248.190:/root/pinger-micro
-ssh root@167.172.248.190 "
-cd /root/pinger-micro;
-unzip -qo zipped.zip;
-npm i;
-rm zipped.zip;
-pm2 reload micro;
-exit;
-"
-
-# NYC http://134.209.213.71:3000 NYC8 DO (NYC-1 datacenter)
-scp zipped.zip root@134.209.213.71:/root/pinger-micro
-ssh root@134.209.213.71 "
+# BLR Bangalore http://143.110.180.198:3000 BLR1 DO (BLR-1 datacenter)
+scp zipped.zip root@143.110.180.198:/root/pinger-micro
+ssh root@143.110.180.198 "
 cd /root/pinger-micro;
 unzip -qo zipped.zip;
 npm i;

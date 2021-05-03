@@ -1,19 +1,20 @@
 const request = require('request');
 
-const MS_PER_NANO = 1000000
-const NANO_PER_SEC = 1e9
-const TIMEOUT = 10000
+process.env.UV_THREADPOOL_SIZE = 128;
+
+const MS_PER_NANO = 1000000;
+const NANO_PER_SEC = 1e9;
 
 const isStatusOk = status => (status >= 200 && status < 300);
 
 module.exports = (data) => new Promise((resolve, reject) => {
   const payload = {};
-  const { url, method, headers, body, assertion, followRedirect, isTest } = data;
+  const { url, method, headers, body, assertion, followRedirect, isTest, timeout } = data;
 
   const params = {
     uri: url,
     method,
-    timeout: TIMEOUT,
+    timeout: timeout * 1000,
     time: true,
     headers,
     followRedirect,

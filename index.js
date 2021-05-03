@@ -9,6 +9,8 @@ const handleError             = require('./handleError.js');
 const [cyan, yellow, white]   = ['\033[36m', '\033[33m', '\033[0m'];
 const PORT                    = process.env.PORT || 3443;
 
+const TIMEOUT_SECONDS = 10;
+
 const parseUrl = () => {
   let reqUrl = null;
 
@@ -46,11 +48,13 @@ const server = async (req, res) => {
   const isTest         = p.get('isTest', false);
   const protocol       = p.get('protocol', 'http');
   const port           = Number(p.get('port', -1));
+  const timeout        = Number(p.get('timeout', TIMEOUT_SECONDS));
   if (protocol === 'port') {
     const tcpResult = await tcpPing({ host: domain, port });
     tcpResult.location = location;
     tcpResult.url = domain;
     tcpResult.status = tcpResult.alive ? 200 : 400;
+    tcpResult.protocol = protocol;
     tcpResult.port = port;
     tcpResult.date = new Date();
     return send(res, 200, tcpResult);
@@ -59,6 +63,7 @@ const server = async (req, res) => {
     const icmpResult = await icmpPing({ host: domain });
     icmpResult.location = location;
     icmpResult.url = domain;
+    icmpResult.protocol = protocol;
     icmpResult.status = icmpResult.alive ? 200 : 400;
     icmpResult.date = new Date();
     return send(res, 200, icmpResult);
@@ -71,7 +76,7 @@ const server = async (req, res) => {
     Object.assign(headers, JSON.parse(decodedHeaders));
   }
   const body = !!rawBody ? decodeURIComponent(rawBody) : '';
-  const data = { location, timeout: 0, url: domain, date: new Date() };
+  const data = { location, timeout: 0, url: domain, date: new Date(), protocol };
   const start = process.hrtime();
   try {
     const response = await httpPing({
@@ -81,13 +86,17 @@ const server = async (req, res) => {
       body,
       assertion,
       followRedirect,
-      isTest
+      isTest,
+      timeout
     });
     console.log(`Request for ${cyan + domain + white} with ${yellow + method + white} method`, new Date());
     Object.assign(data, response);
   } catch (err) {
     data.elapsedTime = Math.round((process.hrtime(start)[0]*1000) + (process.hrtime(start)[1] / 1000000));
     Object.assign(data, handleError(err));
+    if (data.status === 500 && data.elapsedTime >= (TIMEOUT_SECONDS * 1000)) {
+      data.status = 408;
+    }
     data.error = { message: err, debugUrl: req.url };
   }
   return send(res, 200, data);

@@ -49,8 +49,8 @@ sudo apt-get install -y nodejs unzip;
 sudo npm i pm2 micro -g;
 git clone https://github.com/Sinequanonh/pinger-micro.git; cd pinger-micro;npm i;
 
-LOCATION={REGION} pm2 start micro -i 2;
 pm2 install pm2-logrotate;
+LOCATION={REGION} pm2 start micro -i 2;
 
 # New EC2 instance:
 
@@ -66,9 +66,9 @@ pm2 install pm2-logrotate;
 
 `git clone https://github.com/Sinequanonh/pinger-micro.git; cd pinger-micro;npm i`
 
-`LOCATION={REGION} pm2 start micro -i 2`
-
 `pm2 install pm2-logrotate;`
+
+`LOCATION={REGION} pm2 start micro -i 2`
 
 # Start the same instance with a different port
 `LOCATION=nyc pm2 start -f micro --name="port:3002" -- -l tcp://0.0.0.0:3002`
